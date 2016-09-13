@@ -36,9 +36,7 @@ class Csrf
      */
     public function __construct($view = null)
     {
-        if ($view !== null) {
-            $this->view = $view;
-        }
+        $this->view = $view;
         $this->session = new Session;
     }
 
