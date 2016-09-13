@@ -1,0 +1,22 @@
+{
+    "name": "adbario/slim-csrf",
+    "description": "CSRF protection for Slim 3 framework",
+    "keywords": ["slim", "csrf", "token"],
+    "homepage": "https://github.com/adbario/slim-csrf",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AdBar"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "AdBar\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=5.5",
+        "slim/slim": "~3.0",
+        "adbario/slim-secure-session-middleware": "~1.0.0",
+    }
+}
