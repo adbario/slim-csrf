@@ -110,10 +110,6 @@ If you just want to edit simple message:
     
     $container['csrf'] = function ($c) {
         $csrf = new \AdBar\Csrf($c->view);
-        $csrf->setTokenError(function ($request, $response, $next) use ($c) {
-            $body = new \Slim\Http\Body(fopen('php://temp', 'r+'));
-            $body->write('This is my custom error message.');
-            return $response->withStatus(400)->withHeader('Content-type', 'text/plain')->withBody($body);
-        });
+        $csrf->setTokenErrorMessage('This is my custom error message.');
         return $csrf;
     };
