@@ -26,6 +26,9 @@ class Csrf
     /** @var callable Token validation error callable */
     protected $tokenError;
 
+    /** @var string Token validation error message */
+    protected $errorMessage = 'Invalid security token.';
+
     /**
      * Constructor
      *
@@ -141,7 +144,7 @@ class Csrf
         if (empty($this->tokenError)) {
             $this->tokenError = function (Request $request, Response $response, callable $next) {
                 $body = new \Slim\Http\Body(fopen('php://temp', 'r+'));
-                $body->write('Invalid security token.');
+                $body->write($this->errorMessage);
                 return $response->withStatus(400)->withHeader('Content-type', 'text/plain')->withBody($body);
             };
         }
@@ -156,5 +159,15 @@ class Csrf
     public function setTokenError($tokenError)
     {
         $this->tokenError = $tokenError;
+    }
+
+    /**
+     * Set token validation error message
+     *
+     * @param string $errorMessage Error message
+     */
+    public function setTokenErrorMessage($errorMessage)
+    {
+        $this->errorMessage = $errorMessage;
     }
 }
