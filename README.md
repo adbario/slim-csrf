@@ -27,10 +27,7 @@ If you use Twig-View or PHP-View:
 CSRF protection needs Slim Secure Session Middleware.
 [Inject settings](https://github.com/adbario/slim-secure-session-middleware) for session middleware and register it:
     
-    $app->add(new \AdBar\SessionMiddleware(
-        $app->getContainer(),
-        $settings['session']
-    ));
+    $app->add(new \AdBar\SessionMiddleware($app->getContainer()));
 
 ### Register for all routes
 To use CSRF protection on all routes, register it as a middleware before session middleware:
