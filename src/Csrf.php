@@ -1,8 +1,14 @@
 <?php
+/**
+ * Slim CSRF Protection
+ *
+ * @author  Riku Särkinen <riku@adbar.io>
+ * @link    https://github.com/adbario/slim-csrf
+ * @license https://github.com/adbario/slim-csrf/blob/master/LICENSE.md (MIT License)
+ */
+namespace Adbar\Slim;
 
-namespace AdBar;
-
-use AdBar\Session;
+use Adbar\Session;
 use RuntimeException;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -34,10 +40,10 @@ class Csrf
      *
      * @param object $view View object
      */
-    public function __construct($view = null)
+    public function __construct(Session $session, $view = null)
     {
+        $this->session = $session;
         $this->view = $view;
-        $this->session = new Session;
     }
 
     /**
@@ -59,7 +65,7 @@ class Csrf
         if (in_array($request->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH'])) {
             $body = (array)$request->getParsedBody();
             $token = isset($body['csrf_token']) ? $body['csrf_token'] : false;
-            if (!$token || !$this->validateToken($token)) {
+            if ($token === false || $this->validateToken($token) === false) {
                 // Generate new token
                 $request = $this->generateToken($request);
 
@@ -71,20 +77,17 @@ class Csrf
         }
 
         // Generate new token
-        $this->generateToken($request);
-
-        // Generate new token
         $request = $this->generateToken($request);
 
         // Generate HTML form input field for token
         $form = $this->generateForm();
 
         // Add token input field to views
-        if (is_object($this->view)) {
-            if (get_class($this->view) === 'Slim\Views\Twig') {
+        if (!is_null($this->view)) {
+            if ($this->view instanceof \Slim\Views\Twig) {
                 // Twig-View
                 $this->view->getEnvironment()->addGlobal('csrf', $form);
-            } elseif (get_class($this->view) === 'Slim\Views\PhpRenderer') {
+            } elseif ($this->view instanceof \Slim\Views\PhpRenderer) {
                 // PHP-View
                 $this->view->addAttribute('csrf', $form);
             }
@@ -101,8 +104,7 @@ class Csrf
      */
     protected function validateToken($token)
     {
-        return is_string($token) && $token === $this->session->get('csrf_token', null)
-            ? true : false;
+        return is_string($token) && $token === $this->session->getFrom('csrf', 'token', null);
     }
 
     /**
@@ -113,8 +115,8 @@ class Csrf
      */
     protected function generateToken(Request $request)
     {
-        $token = bin2hex(random_bytes(20));
-        $this->session->set('csrf_token', $token);
+        $token = bin2hex(random_bytes(16));
+        $this->session->setTo('csrf', 'token', $token);
         $request = $request->withAttribute('csrf_token', $token);
 
         return $request;
@@ -127,9 +129,7 @@ class Csrf
      */
     public function generateForm()
     {
-        $form = '<input type="hidden" name="csrf_token" value="' . $this->session->get('csrf_token') . '">';
-
-        return $form;
+        return '<input type="hidden" name="csrf_token" value="' . $this->session->getFrom('csrf', 'token') . '">';
     }
 
     /**
